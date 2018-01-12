@@ -1,0 +1,138 @@
+# cschim235.github.io
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no">
+  <link href="http://jqmdesigner.appspot.com/gk/lib/jquery.mobile/1.4.5/jquery.mobile-1.4.5.min.css" rel="stylesheet" type="text/css" />
+  <!-- Export CSS  -->
+  <style>
+    .test{
+      width:90%; 
+      height:150px; 
+      border:1px 
+      solid #000;
+      margin:0 auto;
+      
+    }
+  </style>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>
+    $(document).on("mobileinit", function () {
+      $.mobile.autoInitializePage = false;
+      $.mobile.hashListeningEnabled = false;
+    });
+
+    function mobileInitPage() {
+      $.mobile.hashListeningEnabled = true;
+      $.mobile.initializePage();
+    };
+  </script>
+  <script src="//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+  <!-- Uncomment the following to include cordova in your android project -->
+  <!--<script src="http://jqmdesigner.appspot.com/platforms/android/cordova.js"></script>-->
+  <!-- GK Loader use RequireJS to load module -->
+  <script src="http://requirejs.org/docs/release/2.1.11/minified/require.js"></script>
+  <!--Plug in GK-->
+  <script src="http://jqmdesigner.appspot.com/components/jquery.gk/jquery.gk.min.js"></script>
+  <!-- Load GK components -->
+  <script components="http://jqmdesigner.appspot.com/components/gk-ext/image.html" callback="mobileInitPage" src="http://jqmdesigner.appspot.com/components/gk-loader/gk-loader.js"></script>
+  <!-- Export JS  -->
+  <script>
+    (function () {
+      var supportTouch = $.support.touch,
+        scrollEvent = "touchmove scroll",
+        touchStartEvent = supportTouch ? "touchstart" : "mousedown",
+        touchStopEvent = supportTouch ? "touchend" : "mouseup",
+        touchMoveEvent = supportTouch ? "touchmove" : "mousemove";
+      $.event.special.swipeupdown = {
+        setup: function () {
+          var thisObject = this;
+          var $this = $(thisObject);
+          $this.bind(touchStartEvent, function (event) {
+            var data = event.originalEvent.touches ?
+              event.originalEvent.touches[0] :
+              event,
+              start = {
+                time: (new Date).getTime(),
+                coords: [data.pageX, data.pageY],
+                origin: $(event.target)
+              },
+              stop;
+
+            function moveHandler(event) {
+              if (!start) {
+                return;
+              }
+              var data = event.originalEvent.touches ?
+                event.originalEvent.touches[0] :
+                event;
+              stop = {
+                time: (new Date).getTime(),
+                coords: [data.pageX, data.pageY]
+              };
+
+              // prevent scrolling
+              if (Math.abs(start.coords[1] - stop.coords[1]) > 10) {
+                event.preventDefault();
+              }
+            }
+            $this
+              .bind(touchMoveEvent, moveHandler)
+              .one(touchStopEvent, function (event) {
+                $this.unbind(touchMoveEvent, moveHandler);
+                if (start && stop) {
+                  if (stop.time - start.time < 1000 &&
+                    Math.abs(start.coords[1] - stop.coords[1]) > 30 &&
+                    Math.abs(start.coords[0] - stop.coords[0]) < 75) {
+                    start.origin
+                      .trigger("swipeupdown")
+                      .trigger(start.coords[1] > stop.coords[1] ? "swipeup" : "swipedown");
+                  }
+                }
+                start = stop = undefined;
+              });
+          });
+        }
+      };
+      $.each({
+        swipedown: "swipeupdown",
+        swipeup: "swipeupdown"
+      }, function (event, sourceEvent) {
+        $.event.special[event] = {
+          setup: function () {
+            $(this).bind(sourceEvent, $.noop);
+          }
+        };
+      });
+
+    })();
+    (function () {
+      $(document).on("pageinit", "#home", function () {
+        $('#swipeupthis').on("swipeup", function () {
+          $('#status').text('swipeup');
+        });
+        $('#swipedownthis').on("swipedown", function () {
+          $('#status').text('swipedown');
+        });
+      });
+    })()
+  </script>
+  <title>EZo App</title>
+</head>
+
+<body gk-app>
+  <!-- Page: home  -->
+  <div id="home" data-role="page">
+    <div role="main" class="ui-content">
+      <span id="status">狀態顯示</span>
+      <br>
+      <br>
+      <div id="swipeupthis" class="test">swipe up</div>
+      <img style="width:100%;" src="http://jqmdesigner.appspot.com/images/image.png" is="image">
+    </div>
+  </div>
+</body>
+
+</html>
